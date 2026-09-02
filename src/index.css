@@ -1,31 +1,34 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;700;800&display=swap');
 
 :root {
-  /* 60-30-10 Color Rule */
+  /* 60-30-10 Color Rule / Vitality Core */
   /* Background (60%) */
-  --bg-base: #0a0a0f;
-  --bg-surface: #14141d;
-  --bg-surface-elevated: #1e1e2d;
+  --bg-base: #FCF9F9; /* Subtle warm tint from screenshot */
+  --bg-surface: #FFFFFF;
+  --bg-surface-elevated: #FFFFFF;
 
   /* Secondary (30%) - Borders, subtle elements, secondary text */
-  --color-border: rgba(255, 255, 255, 0.08);
-  --color-border-hover: rgba(255, 255, 255, 0.15);
-  --text-secondary: #9494a0;
-  --text-tertiary: #6b6b78;
+  --color-border: #F3EAEA;
+  --color-border-hover: #E8DDDD;
+  --text-secondary: #89878F; /* Neutral from Vitality Core */
+  --text-tertiary: #C2C0C7;
 
   /* Primary (10%) - Accent, Buttons, Alerts */
-  --color-primary: #f03e3e; /* Urgent Blood Red */
-  --color-primary-hover: #c92a2a;
-  --color-primary-light: rgba(240, 62, 62, 0.15);
-  --text-primary: #f8f9fa;
+  --color-primary: #B71C1C; /* Vitality Core Primary */
+  --color-primary-hover: #9B1111;
+  --color-primary-light: rgba(183, 28, 28, 0.08);
+  --text-primary: #1A191C;
   
+  /* Tertiary Color */
+  --color-tertiary: #0050A4;
+
   /* Status Colors */
   --color-success: #37b24d;
   --color-warning: #f59f00;
 
   /* Typography */
   --font-sans: 'Inter', sans-serif;
-  --font-heading: 'Outfit', sans-serif;
+  --font-heading: 'Inter', sans-serif; /* Vitality Core uses Inter for everything */
   
   /* Fluid Typography (Clamp) */
   --text-xs: clamp(0.75rem, 0.7vw + 0.5rem, 0.875rem);
@@ -47,11 +50,11 @@
   --spacing-12: 3rem;
 
   /* Radii */
-  --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
-  --radius-full: 9999px;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --radius-full: 9999px; /* For Pill buttons */
 
   /* Transitions */
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -102,17 +105,42 @@ button {
 }
 
 .app-container {
-  max-width: 600px; /* Mobile-first / narrow desktop for MVP */
-  margin: 0 auto;
   width: 100%;
   flex: 1;
   display: flex;
   flex-direction: column;
   position: relative;
-  background-color: var(--bg-surface);
-  box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
-  overflow: hidden;
+  background-color: var(--bg-base); /* match body so it blends in */
+  overflow-x: hidden;
 }
+
+/* Standard container for centering content on wide screens */
+.content-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  padding: var(--spacing-6);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Responsive grid layout for pages (Mobile: Stacked, Desktop: Side-by-Side) */
+.split-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-8);
+  align-items: center;
+  min-height: calc(100vh - 80px); /* Account for navbar */
+}
+
+@media (min-width: 900px) {
+  .split-layout {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-12);
+  }
+}
+
 
 /* Glassmorphism Utilities */
 .glass-panel {
@@ -139,6 +167,19 @@ button {
   100% { box-shadow: 0 0 0 0 rgba(240, 62, 62, 0); }
 }
 
+.desktop-only {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .desktop-only {
+    display: flex; /* or block based on need, we'll assume flex for nav */
+  }
+  .mobile-only {
+    display: none !important;
+  }
+}
+
 .animate-fade-in {
   animation: fadeIn var(--transition-normal) forwards;
 }
@@ -148,6 +189,9 @@ button {
 }
 
 /* Staggered animation delays for children */
+.stagger-1, .stagger-2, .stagger-3, .stagger-4 {
+  animation: slideUp var(--transition-normal) forwards;
+}
 .stagger-1 { animation-delay: 100ms; opacity: 0; }
 .stagger-2 { animation-delay: 200ms; opacity: 0; }
 .stagger-3 { animation-delay: 300ms; opacity: 0; }

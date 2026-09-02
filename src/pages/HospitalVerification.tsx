@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '../components/Card';
-import { CheckCircle, ShieldCheck } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
 
 export const HospitalVerification: React.FC = () => {
   const navigate = useNavigate();

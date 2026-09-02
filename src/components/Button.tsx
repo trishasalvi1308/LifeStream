@@ -3,7 +3,7 @@ import clsx from 'clsx';
 import styles from './Button.module.css';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost';
+  variant?: 'primary' | 'secondary' | 'inverted' | 'outlined' | 'ghost';
   icon?: React.ElementType;
   isLoading?: boolean;
 }
@@ -23,7 +23,7 @@ export const Button: React.FC<ButtonProps> = ({
       {...props}
     >
       {isLoading ? (
-        <span className={styles.icon}>...</span> // Simple loading text or spinner
+        <span className={styles.icon}>...</span>
       ) : Icon ? (
         <Icon className={styles.icon} />
       ) : null}

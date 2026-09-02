@@ -3,9 +3,9 @@
   align-items: center;
   justify-content: center;
   gap: var(--spacing-2);
-  padding: var(--spacing-3) var(--spacing-6);
-  border-radius: var(--radius-md);
-  font-weight: 600;
+  padding: var(--spacing-4) var(--spacing-8); /* Taller, wider buttons for Vitality Core */
+  border-radius: var(--radius-full); /* Pill shape */
+  font-weight: 700;
   font-size: var(--text-base);
   transition: all var(--transition-fast);
   width: 100%;
@@ -23,23 +23,46 @@
 .primary {
   background-color: var(--color-primary);
   color: white;
-  box-shadow: 0 4px 14px 0 rgba(240, 62, 62, 0.39);
+  border: 1px solid var(--color-primary);
+  box-shadow: 0 8px 16px -4px rgba(183, 28, 28, 0.4);
 }
 
 .primary:hover:not(:disabled) {
   background-color: var(--color-primary-hover);
-  box-shadow: 0 6px 20px rgba(240, 62, 62, 0.5);
-  transform: translateY(-1px);
+  box-shadow: 0 12px 20px -4px rgba(183, 28, 28, 0.5);
+  transform: translateY(-2px);
 }
 
 .secondary {
-  background-color: transparent;
+  background-color: var(--bg-surface);
   color: var(--text-primary);
   border: 1px solid var(--color-border);
+  box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.05);
 }
 
 .secondary:hover:not(:disabled) {
-  background-color: var(--color-border);
+  background-color: var(--color-border-hover);
+}
+
+.inverted {
+  background-color: white;
+  color: var(--color-primary);
+  border: 1px solid white;
+  box-shadow: 0 8px 16px -4px rgba(183, 28, 28, 0.2);
+}
+
+.inverted:hover:not(:disabled) {
+  background-color: #FDF2F2;
+}
+
+.outlined {
+  background-color: transparent;
+  color: var(--color-primary);
+  border: 2px solid var(--color-primary);
+}
+
+.outlined:hover:not(:disabled) {
+  background-color: var(--color-primary-light);
 }
 
 .ghost {

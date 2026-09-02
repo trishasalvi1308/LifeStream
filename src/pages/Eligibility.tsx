@@ -64,7 +64,10 @@ export const Eligibility: React.FC = () => {
 
           <Button 
             disabled={!isEligible} 
-            onClick={() => navigate('/login')} // In reality, would go to Dashboard
+            onClick={() => {
+              localStorage.setItem('user_profile_completed', 'true');
+              navigate('/sos');
+            }}
             style={{ marginTop: 'var(--spacing-4)' }}
           >
             Complete Registration

@@ -21,10 +21,14 @@ export const RequestFulfilled: React.FC = () => {
           Please proceed to City General Hospital Emergency Ward. Have your ID ready.
         </p>
         
-        <Button style={{ marginBottom: 'var(--spacing-3)' }} icon={Navigation}>
+        <Button 
+          style={{ marginBottom: 'var(--spacing-3)' }} 
+          icon={Navigation}
+          onClick={() => window.open('https://www.google.com/maps/search/?api=1&query=City+General+Hospital', '_blank')}
+        >
           Open in Maps
         </Button>
-        <Button variant="secondary" onClick={() => navigate('/login')}>
+        <Button variant="secondary" onClick={() => navigate('/dashboard/donor')}>
           Return to Dashboard
         </Button>
       </Card>
