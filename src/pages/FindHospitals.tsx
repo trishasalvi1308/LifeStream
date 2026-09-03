@@ -37,11 +37,13 @@ const calculateDistanceKm = (
   return earthRadiusKm * 2 * Math.atan2(Math.sqrt(haversine), Math.sqrt(1 - haversine));
 };
 
+const defaultMapCenter = { lat: 19.0760, lng: 72.8777 };
+
 export const FindHospitals: React.FC = () => {
   const navigate = useNavigate();
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
+  const [mapAuthError, setMapAuthError] = useState(false);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
-  const [loadingMsg, setLoadingMsg] = useState('Finding your location...');
   const [organizationsLoading, setOrganizationsLoading] = useState(false);
   const [organizationsError, setOrganizationsError] = useState<string | null>(null);
 
@@ -50,6 +52,15 @@ export const FindHospitals: React.FC = () => {
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
     libraries
   });
+
+  useEffect(() => {
+    const windowWithMapsAuth = window as Window & { gm_authFailure?: () => void };
+    windowWithMapsAuth.gm_authFailure = () => setMapAuthError(true);
+
+    return () => {
+      delete windowWithMapsAuth.gm_authFailure;
+    };
+  }, []);
 
   // Get user location on mount
   useEffect(() => {
@@ -60,21 +71,15 @@ export const FindHospitals: React.FC = () => {
             lat: position.coords.latitude,
             lng: position.coords.longitude
           });
-          setLoadingMsg('Loading nearby organizations...');
         },
         (error) => {
           console.error("Error fetching location", error);
-          setLoadingMsg('Could not get your location. Please enable location services.');
         }
       );
-    } else {
-      setLoadingMsg('Geolocation is not supported by your browser.');
     }
   }, []);
 
   useEffect(() => {
-    if (!userLocation) return;
-
     let isMounted = true;
     const loadOrganizations = async () => {
       setOrganizationsLoading(true);
@@ -99,7 +104,7 @@ export const FindHospitals: React.FC = () => {
         .filter((organization) => organization.latitude !== null && organization.longitude !== null)
         .map((organization) => ({
           ...organization,
-          distanceKm: calculateDistanceKm(userLocation, {
+          distanceKm: calculateDistanceKm(userLocation || defaultMapCenter, {
             lat: organization.latitude as number,
             lng: organization.longitude as number
           })
@@ -116,6 +121,8 @@ export const FindHospitals: React.FC = () => {
     };
   }, [userLocation]);
 
+  const mapCenter = userLocation || defaultMapCenter;
+
   return (
     <div className="animate-fade-in" style={{ padding: 'var(--spacing-6) 0', maxWidth: '1200px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column', height: 'calc(100vh - 120px)' }}>
       
@@ -130,45 +137,54 @@ export const FindHospitals: React.FC = () => {
         </div>
       </div>
 
-      {!isLoaded || !userLocation ? (
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>
-          {loadError ? 'Error loading maps.' : loadingMsg}
-        </div>
-      ) : (
-        <div className="split-layout" style={{ flex: 1, minHeight: 0, gap: 'var(--spacing-6)' }}>
+      <div className="split-layout" style={{ flex: 1, minHeight: 0, gap: 'var(--spacing-6)' }}>
           
           {/* Map Side */}
           <div className="stagger-2" style={{ flex: 1, height: '100%', minHeight: '300px', borderRadius: 'var(--radius-xl)', overflow: 'hidden', border: '4px solid white', boxShadow: '0 12px 24px -8px rgba(0,0,0,0.1)' }}>
-            <GoogleMap
-              mapContainerStyle={{ width: '100%', height: '100%' }}
-              center={userLocation}
-              zoom={13}
-              options={minimalMapOptions}
-            >
-              {/* User Location */}
-              <Marker 
-                position={userLocation} 
-                icon={{
-                  path: google.maps.SymbolPath.CIRCLE,
-                  scale: 8,
-                  fillColor: '#0050A4', /* Tertiary color for user */
-                  fillOpacity: 1,
-                  strokeWeight: 2,
-                  strokeColor: '#ffffff',
-                }}
-              />
+            {isLoaded && !mapAuthError ? (
+              <GoogleMap
+                mapContainerStyle={{ width: '100%', height: '100%' }}
+                center={mapCenter}
+                zoom={13}
+                options={minimalMapOptions}
+              >
+                {/* User Location */}
+                {userLocation && <Marker 
+                  position={userLocation} 
+                  icon={{
+                    path: google.maps.SymbolPath.CIRCLE,
+                    scale: 8,
+                    fillColor: '#0050A4',
+                    fillOpacity: 1,
+                    strokeWeight: 2,
+                    strokeColor: '#ffffff',
+                  }}
+                />}
 
-              {/* Supabase organizations */}
-              {organizations.map((organization) => (
-                <Marker
+                {/* Supabase organizations */}
+                {organizations.map((organization) => (
+                  <Marker
                     key={organization.organization_id}
                     position={{ lat: organization.latitude as number, lng: organization.longitude as number }}
                     icon={{
                       url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png'
                     }}
                   />
-              ))}
-            </GoogleMap>
+                ))}
+              </GoogleMap>
+            ) : (
+              <div style={{ width: '100%', height: '100%', background: 'var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>
+                {loadError || mapAuthError ? (
+                  <iframe
+                    title="Nearby hospitals and blood banks map"
+                    src={`https://www.google.com/maps/embed/v1/view?key=${import.meta.env.VITE_GOOGLE_MAPS_EMBED_KEY || ''}&center=${mapCenter.lat},${mapCenter.lng}&zoom=11`}
+                    style={{ width: '100%', height: '100%', border: 0 }}
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                  />
+                ) : 'Loading map...'}
+              </div>
+            )}
           </div>
 
           {/* List Side */}
@@ -207,8 +223,7 @@ export const FindHospitals: React.FC = () => {
               ))
             )}
           </div>
-        </div>
-      )}
+      </div>
     </div>
   );
 };
