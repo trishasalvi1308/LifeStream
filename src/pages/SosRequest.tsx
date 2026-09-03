@@ -87,19 +87,25 @@ export const SosRequest: React.FC = () => {
       async (position) => {
         setRequestStatus('Saving your SOS request...');
         const requestId = crypto.randomUUID();
-        const { error: insertError } = await supabase.from('sos_requests').insert({
+        const insertPayload = {
           request_id: requestId,
-          requested_blood_group: bloodGroup.toUpperCase(),
-          units_requested: parsedUnits,
+          blood_group: bloodGroup.toUpperCase(),
+          units_required: parsedUnits,
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
-          request_type: 'sos',
           status: 'pending',
-          location_label: location,
           created_at: new Date().toISOString()
-        });
+        };
+        const insertResponse = await supabase.from('sos_requests').insert(insertPayload);
+        console.log('[SOS insert debug] payload:', insertPayload);
+        console.log('[SOS insert debug] response data:', insertResponse.data);
+        console.log('[SOS insert debug] error object:', insertResponse.error);
+        console.log('[SOS insert debug] error message:', insertResponse.error?.message);
+        console.log('[SOS insert debug] error code:', insertResponse.error?.code);
+        console.log('[SOS insert debug] error details:', insertResponse.error?.details);
+        console.log('[SOS insert debug] error hint:', insertResponse.error?.hint);
 
-        if (insertError) {
+        if (insertResponse.error) {
           setRequestStatus('Could not save the SOS request. Please try again.');
           return;
         }
