@@ -11,6 +11,9 @@ interface AcceptanceState {
   match?: SosOrganizationMatch;
   sosLocation?: { latitude: number; longitude: number };
   error?: string;
+  notificationRecorded: boolean;
+  notificationError?: string;
+  fallbackActivated: boolean;
   simulated: true;
 }
 
@@ -20,6 +23,9 @@ export const RealTimeAlert: React.FC = () => {
   const acceptance = state as AcceptanceState | null;
   const organization = acceptance?.match;
   const error = acceptance?.error;
+  const notificationRecorded = acceptance?.notificationRecorded;
+  const notificationError = acceptance?.notificationError;
+  const fallbackActivated = acceptance?.fallbackActivated;
 
   return (
     <div style={{ padding: 'var(--spacing-6)', display: 'flex', flexDirection: 'column', flex: 1, backgroundColor: 'rgba(240, 62, 62, 0.05)' }} className="animate-fade-in">
@@ -55,6 +61,16 @@ export const RealTimeAlert: React.FC = () => {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-4)', marginBottom: 'var(--spacing-6)' }}>
+          {fallbackActivated ? (
+            <div>
+              <p style={{ color: 'var(--color-primary)', fontWeight: 700 }}>No eligible organization found.</p>
+              <p style={{ color: 'var(--text-secondary)' }}>Emergency donor fallback activated.</p>
+            </div>
+          ) : notificationRecorded ? (
+            <p style={{ color: 'var(--color-success)', fontWeight: 700 }}>Emergency notification sent to the matched organization</p>
+          ) : notificationError ? (
+            <p style={{ color: 'var(--text-secondary)' }}>Match found, but the emergency notification could not be recorded.</p>
+          ) : null}
           {organization && acceptance?.sosLocation && <EmergencyGeofence sosLocation={acceptance.sosLocation} organization={organization} />}
           <div>
             <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginBottom: '2px' }}>Organization Details</p>

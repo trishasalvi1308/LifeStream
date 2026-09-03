@@ -3,18 +3,30 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Card } from '../components/Card';
 import { Map, Search, Heart, UserCheck } from 'lucide-react';
 import { findNearestSosOrganization, type SosOrganizationMatch } from '../lib/sosMatching';
+import { supabase } from '../config/supabase';
 
 interface SosRequestState {
   requestId: string;
   bloodGroup: string;
+  unitsRequired: number;
   latitude: number;
   longitude: number;
 }
 
 interface AcceptanceState {
-  match: SosOrganizationMatch;
+  match?: SosOrganizationMatch;
   sosLocation: Pick<SosRequestState, 'latitude' | 'longitude'>;
+  notificationRecorded: boolean;
+  notificationError?: string;
+  fallbackActivated: boolean;
   simulated: true;
+}
+
+interface MatchProcessingResult {
+  match: SosOrganizationMatch | null;
+  notificationRecorded: boolean;
+  notificationError?: string;
+  fallbackActivated: boolean;
 }
 
 export const MatchingProcess: React.FC = () => {
@@ -26,10 +38,10 @@ export const MatchingProcess: React.FC = () => {
   useEffect(() => {
     let isMounted = true;
     const requestState = state as SosRequestState | null;
-    const loadMatch = async () => {
+    const loadMatch = async (): Promise<MatchProcessingResult> => {
       if (!requestState) {
         console.log('[Phase 5] match error', 'SOS request state is unavailable');
-        return null;
+        return { match: null, notificationRecorded: false, fallbackActivated: false };
       }
 
       console.log('[Phase 5] SOS request', requestState);
@@ -41,7 +53,36 @@ export const MatchingProcess: React.FC = () => {
       console.log('[Phase 5] eligible organizations count', result.match ? 1 : 0);
       console.log('[Phase 5] nearest match', result.match);
       if (isMounted) setMatch(result.match);
-      return result.match;
+
+      const notificationPayload = {
+        request_id: requestState.requestId,
+        organization_id: result.match?.organization_id ?? null,
+        requested_blood_group: requestState.bloodGroup,
+        units_requested: requestState.unitsRequired,
+        latitude: requestState.latitude,
+        longitude: requestState.longitude,
+        notification_type: result.match ? 'organization_match' : 'donor_fallback',
+        status: 'pending',
+        message: result.match
+          ? 'An emergency SOS blood request has been matched to this organization.'
+          : 'No eligible blood organization was found nearby. Emergency donor fallback has been activated.',
+        created_at: new Date().toISOString()
+      };
+      const notificationResponse = await supabase.from('notifications').insert(notificationPayload);
+      console.log('[Phase 7] SOS request ID', requestState.requestId);
+      console.log('[Phase 7] organization matched', Boolean(result.match));
+      console.log('[Phase 7] notification insert result', notificationResponse);
+
+      const notificationError = notificationResponse.error?.message;
+      if (notificationError) console.log('[Phase 7] match error', notificationResponse.error);
+      console.log('[Phase 7] fallback activation result', !result.match && !notificationError);
+
+      return {
+        match: result.match,
+        notificationRecorded: !notificationError,
+        notificationError,
+        fallbackActivated: !result.match
+      };
     };
 
     const matchingPromise = loadMatch();
@@ -51,17 +92,23 @@ export const MatchingProcess: React.FC = () => {
       setTimeout(() => setStep(3), 6000), // Nearest Donor Found
     ];
     const navigationTimer = setTimeout(async () => {
-      const nearestMatch = await matchingPromise;
+      const processingResult = await matchingPromise;
       navigate('/alert', {
-        state: nearestMatch && requestState ? {
-          match: nearestMatch,
+        state: processingResult.match && requestState ? {
+          match: processingResult.match,
           sosLocation: {
             latitude: requestState.latitude,
             longitude: requestState.longitude
           },
+          notificationRecorded: processingResult.notificationRecorded,
+          notificationError: processingResult.notificationError,
+          fallbackActivated: false,
           simulated: true
         } satisfies AcceptanceState : {
-          error: 'No eligible organization has available blood stock.',
+          error: processingResult.notificationError || 'No eligible blood organization was found nearby.',
+          notificationRecorded: processingResult.notificationRecorded,
+          notificationError: processingResult.notificationError,
+          fallbackActivated: true,
           simulated: true
         }
       });

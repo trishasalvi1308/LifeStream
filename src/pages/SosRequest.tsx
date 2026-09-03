@@ -115,6 +115,7 @@ export const SosRequest: React.FC = () => {
           state: {
             requestId,
             bloodGroup: bloodGroup.toUpperCase(),
+            unitsRequired: parsedUnits,
             latitude: position.coords.latitude,
             longitude: position.coords.longitude
           }

@@ -6,6 +6,7 @@ import { ShieldCheck } from 'lucide-react';
 interface SosRequestState {
   requestId: string;
   bloodGroup: string;
+  unitsRequired: number;
   latitude: number;
   longitude: number;
 }
