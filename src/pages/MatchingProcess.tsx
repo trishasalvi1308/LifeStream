@@ -1,120 +1,76 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Card } from '../components/Card';
 import { Map, Search, Heart, UserCheck } from 'lucide-react';
-import { supabase } from '../config/supabase';
+import { findNearestSosOrganization, type SosOrganizationMatch } from '../lib/sosMatching';
 
-interface Organization {
-  organization_id: string | number;
-  organization_name: string;
-  organization_type: 'hospital' | 'blood_bank';
-  address: string | null;
-  area: string | null;
-  phone: string | null;
-  latitude: number | null;
-  longitude: number | null;
+interface SosRequestState {
+  requestId: string;
+  bloodGroup: string;
+  latitude: number;
+  longitude: number;
 }
 
 interface AcceptanceState {
-  organization: Organization;
+  match: SosOrganizationMatch;
+  sosLocation: Pick<SosRequestState, 'latitude' | 'longitude'>;
   simulated: true;
 }
 
-const distanceInKm = (
-  first: { lat: number; lng: number },
-  second: { lat: number; lng: number }
-) => {
-  const earthRadiusKm = 6371;
-  const latitudeDifference = (second.lat - first.lat) * Math.PI / 180;
-  const longitudeDifference = (second.lng - first.lng) * Math.PI / 180;
-  const firstLatitude = first.lat * Math.PI / 180;
-  const secondLatitude = second.lat * Math.PI / 180;
-  const haversine = Math.sin(latitudeDifference / 2) ** 2
-    + Math.cos(firstLatitude) * Math.cos(secondLatitude)
-    * Math.sin(longitudeDifference / 2) ** 2;
-
-  return earthRadiusKm * 2 * Math.atan2(Math.sqrt(haversine), Math.sqrt(1 - haversine));
-};
-
 export const MatchingProcess: React.FC = () => {
   const navigate = useNavigate();
+  const { state } = useLocation();
   const [step, setStep] = useState(0);
+  const [match, setMatch] = useState<SosOrganizationMatch | null>(null);
 
   useEffect(() => {
     let isMounted = true;
-    let selectedOrganization: Organization | null = null;
-
-    const loadOrganization = async () => {
-      const { data, error } = await supabase
-        .from('organizations')
-        .select('organization_id, organization_name, organization_type, address, area, phone, latitude, longitude')
-        .eq('is_active', true)
-        .eq('is_verified', true)
-        .in('organization_type', ['hospital', 'blood_bank']);
-
-      if (!isMounted) return;
-
-      if (error || !data || data.length === 0) {
-        selectedOrganization = null;
-        return;
+    const requestState = state as SosRequestState | null;
+    const loadMatch = async () => {
+      if (!requestState) {
+        console.log('[Phase 5] match error', 'SOS request state is unavailable');
+        return null;
       }
 
-      const organizations = data as Organization[];
-      const setSelectedOrganization = (position?: GeolocationPosition) => {
-        const validOrganizations = organizations.filter(
-          (organization) => organization.latitude !== null && organization.longitude !== null
-        );
-
-        if (!position || validOrganizations.length === 0) {
-          selectedOrganization = organizations[0];
-          return;
-        }
-
-        const userLocation = {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude
-        };
-        selectedOrganization = validOrganizations
-          .map((organization) => ({
-            organization,
-            distance: distanceInKm(userLocation, {
-              lat: organization.latitude as number,
-              lng: organization.longitude as number
-            })
-          }))
-          .sort((first, second) => first.distance - second.distance)[0]?.organization ?? null;
-      };
-
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          setSelectedOrganization,
-          () => setSelectedOrganization()
-        );
-      } else {
-        setSelectedOrganization();
-      }
+      console.log('[Phase 5] SOS request', requestState);
+      const result = await findNearestSosOrganization(requestState.bloodGroup, {
+        latitude: requestState.latitude,
+        longitude: requestState.longitude
+      });
+      if (result.error) console.log('[Phase 5] match error', result.error);
+      console.log('[Phase 5] eligible organizations count', result.match ? 1 : 0);
+      console.log('[Phase 5] nearest match', result.match);
+      if (isMounted) setMatch(result.match);
+      return result.match;
     };
 
-    void loadOrganization();
-
+    const matchingPromise = loadMatch();
     const steps = [
       setTimeout(() => setStep(1), 2000), // Scanning Geolocation
       setTimeout(() => setStep(2), 4000), // Checking Blood Compatibility
       setTimeout(() => setStep(3), 6000), // Nearest Donor Found
-      setTimeout(() => navigate('/alert', {
-        state: selectedOrganization ? {
-          organization: selectedOrganization,
+    ];
+    const navigationTimer = setTimeout(async () => {
+      const nearestMatch = await matchingPromise;
+      navigate('/alert', {
+        state: nearestMatch && requestState ? {
+          match: nearestMatch,
+          sosLocation: {
+            latitude: requestState.latitude,
+            longitude: requestState.longitude
+          },
           simulated: true
         } satisfies AcceptanceState : {
-          error: 'No verified organizations are currently available.',
+          error: 'No eligible organization has available blood stock.',
           simulated: true
         }
-      }), 8000), // Route to Real-Time Alert simulation
-    ];
+      });
+    }, 8000);
 
     return () => {
       isMounted = false;
       steps.forEach(clearTimeout);
+      clearTimeout(navigationTimer);
     };
   }, [navigate]);
 
@@ -173,7 +129,7 @@ export const MatchingProcess: React.FC = () => {
         {step >= 3 && (
           <div style={{ textAlign: 'center', marginTop: 'var(--spacing-6)', color: 'var(--color-success)' }} className="animate-fade-in">
             <UserCheck size={48} style={{ margin: '0 auto', marginBottom: 'var(--spacing-2)' }} />
-            <h3>Organization Selected</h3>
+            <h3>{match ? 'Organization Matched' : 'No Eligible Match Yet'}</h3>
           </div>
         )}
 

@@ -1,15 +1,23 @@
 import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Card } from '../components/Card';
 import { ShieldCheck } from 'lucide-react';
 
+interface SosRequestState {
+  requestId: string;
+  bloodGroup: string;
+  latitude: number;
+  longitude: number;
+}
+
 export const HospitalVerification: React.FC = () => {
   const navigate = useNavigate();
+  const { state: requestState } = useLocation();
 
   useEffect(() => {
     // Simulate API call for verification
     const timer = setTimeout(() => {
-      navigate('/matching');
+      navigate('/matching', { state: requestState as SosRequestState | undefined });
     }, 2500);
     return () => clearTimeout(timer);
   }, [navigate]);

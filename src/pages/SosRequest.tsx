@@ -93,7 +93,7 @@ export const SosRequest: React.FC = () => {
           units_required: parsedUnits,
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
-          status: 'pending',
+          status: 'searching',
           created_at: new Date().toISOString()
         };
         const insertResponse = await supabase.from('sos_requests').insert(insertPayload);
@@ -111,7 +111,14 @@ export const SosRequest: React.FC = () => {
         }
 
         setRequestStatus('SOS request saved.');
-        navigate('/verify-hospital', { state: { requestId } });
+        navigate('/verify-hospital', {
+          state: {
+            requestId,
+            bloodGroup: bloodGroup.toUpperCase(),
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+          }
+        });
       },
       (geolocationError) => {
         const message = geolocationError.code === geolocationError.PERMISSION_DENIED

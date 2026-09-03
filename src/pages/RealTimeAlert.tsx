@@ -4,18 +4,12 @@ import { Card } from '../components/Card';
 import { Button } from '../components/Button';
 import { BellRing, Clock, MapPin, Droplet } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
-
-interface Organization {
-  organization_id: string | number;
-  organization_name: string;
-  organization_type: 'hospital' | 'blood_bank';
-  address: string | null;
-  area: string | null;
-  phone: string | null;
-}
+import { EmergencyGeofence } from '../components/EmergencyGeofence';
+import type { SosOrganizationMatch } from '../lib/sosMatching';
 
 interface AcceptanceState {
-  organization?: Organization;
+  match?: SosOrganizationMatch;
+  sosLocation?: { latitude: number; longitude: number };
   error?: string;
   simulated: true;
 }
@@ -24,7 +18,7 @@ export const RealTimeAlert: React.FC = () => {
   const navigate = useNavigate();
   const { state } = useLocation();
   const acceptance = state as AcceptanceState | null;
-  const organization = acceptance?.organization;
+  const organization = acceptance?.match;
   const error = acceptance?.error;
 
   return (
@@ -61,15 +55,17 @@ export const RealTimeAlert: React.FC = () => {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-4)', marginBottom: 'var(--spacing-6)' }}>
+          {organization && acceptance?.sosLocation && <EmergencyGeofence sosLocation={acceptance.sosLocation} organization={organization} />}
           <div>
             <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginBottom: '2px' }}>Organization Details</p>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--spacing-2)' }}>
               <MapPin size={18} color="var(--text-secondary)" style={{ marginTop: '2px' }} />
               <span>
-                {error || organization?.organization_name || 'No organization was selected'}
+                {error || organization?.organization_name || 'No eligible organization was matched'}
                 {organization && <>
                   <br /><span style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)' }}>
                     {organization.organization_type === 'blood_bank' ? 'Blood Bank' : 'Hospital'}
+                    {` · ${organization.blood_group} · ${organization.available_quantity} units · ${organization.distance_km.toFixed(1)} km away`}
                     {organization.address && ` · ${organization.address}`}
                     {organization.area && ` · ${organization.area}`}
                     {organization.phone && ` · ${organization.phone}`}
