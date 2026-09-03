@@ -1,12 +1,19 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Droplet, User, MapPin } from 'lucide-react';
+import { Droplet, User, MapPin } from 'lucide-react';
+import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
+import { minimalMapOptions, libraries } from '../utils/mapStyles';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
 import { ActionCard } from '../components/ActionCard';
 
 export const DonorDashboard: React.FC = () => {
   const navigate = useNavigate();
+  const { isLoaded } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
+    libraries
+  });
 
   return (
     <div className="animate-fade-in" style={{ padding: 'var(--spacing-6) 0', maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
@@ -18,7 +25,7 @@ export const DonorDashboard: React.FC = () => {
           color: 'var(--text-primary)',
           fontWeight: 700
         }}>
-          Hello, Rahul
+          Hello, {localStorage.getItem('user_name') || 'User'}
         </h1>
         <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-base)', display: 'flex', alignItems: 'center' }}>
           Ready to save a life today?
@@ -52,8 +59,26 @@ export const DonorDashboard: React.FC = () => {
         </div>
       </Card>
 
+      {/* Map Section */}
+      <div className="stagger-3" style={{ marginBottom: 'var(--spacing-8)', height: '250px', borderRadius: 'var(--radius-xl)', overflow: 'hidden', border: '1px solid var(--color-border)' }}>
+        {isLoaded ? (
+          <GoogleMap
+            mapContainerStyle={{ width: '100%', height: '100%' }}
+            center={{ lat: 19.0760, lng: 72.8777 }}
+            zoom={12}
+            options={minimalMapOptions}
+          >
+            <Marker position={{ lat: 19.0760, lng: 72.8777 }} />
+          </GoogleMap>
+        ) : (
+          <div style={{ width: '100%', height: '100%', background: 'var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            Loading Map...
+          </div>
+        )}
+      </div>
+
       {/* Primary Urgent Action */}
-      <div className="stagger-3" style={{ marginBottom: 'var(--spacing-8)' }}>
+      <div className="stagger-4" style={{ marginBottom: 'var(--spacing-8)' }}>
         <Button 
           variant="primary"
           onClick={() => navigate('/sos')} 
@@ -64,7 +89,7 @@ export const DonorDashboard: React.FC = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="stagger-4">
+      <div className="stagger-5">
         <h3 style={{ fontSize: 'var(--text-xl)', marginBottom: 'var(--spacing-4)' }}>Quick Actions</h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--spacing-4)' }}>
           <ActionCard 

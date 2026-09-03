@@ -1,0 +1,18 @@
+organization_id,organization_name,organization_type,address,area,phone,source_url
+ORG-001,G.T. Hospital,hospital,"Near Police Commissioners Office, Lokmanya Tilak Marg, Fort, G.P.O, Mumbai, Maharashtra 400001",Fort,022-22621465,https://mumbaicity.gov.in/
+ORG-002,J.J. Hospital,hospital,"J.J. Marg, Nagpada-Mumbai Central, Off Jijabhoy Road, Mumbai, Maharashtra 400008",Nagpada,022-23735555,https://mumbaicity.gov.in/
+ORG-003,K.E.M. Hospital,hospital,"Acharya Donde Marg, Parel, Mumbai, Maharashtra 400012",Parel,022-24107000,https://mumbaicity.gov.in/
+ORG-004,Municipal Hospital,hospital,"197/1-13, M.S. Ali Road, Chor Bazaar, Kamathipura, Mumbai, Maharashtra 400008",Kamathipura,022-23096361,https://mumbaicity.gov.in/
+ORG-005,Saifee Hospital,hospital,"15/17, Maharshi Karve Marg, Opera House, Girgaon, Mumbai, Maharashtra 400004",Girgaon,022-67570111,https://mumbaicity.gov.in/
+ORG-006,St. George Hospital,hospital,"Near Chhatrapati Shivaji Maharaj Terminus, Fort, Mumbai, Maharashtra 400001",Fort,022-22620242,https://mumbaicity.gov.in/
+ORG-007,Lilavati Hospital & Research Centre,hospital,"A-791, Bandra Reclamation, Bandra West, Mumbai, Maharashtra 400050",Bandra,022-69318000,https://www.lilavatihospital.com/
+ORG-008,Breach Candy Hospital Trust,hospital,"60-A, Bhulabhai Desai Road, Mumbai, Maharashtra 400026",Breach Candy,022-62597788,https://www.breachcandyhospital.org/
+ORG-009,P. D. Hinduja National Hospital & Medical Research Centre,hospital,"S.V.S. Road, Mahim West, Mumbai, Maharashtra 400016",Mahim,022-24451515,https://www.hindujahospital.com/
+ORG-010,Jaslok Hospital & Research Centre,hospital,"15, Dr. G. Deshmukh Marg, Mumbai, Maharashtra 400026",Pedder Road,022-66573333,https://www.jaslokhospital.net/
+ORG-011,Bombay Hospital & Medical Research Centre,hospital,"12, Vitthaldas Thackersey Marg, New Marine Lines, Mumbai, Maharashtra 400020",Marine Lines,022-40511111,https://www.bombayhospital.com/
+ORG-012,Asian Heart Institute,hospital,"G/N Block, Bandra-Kurla Complex, Bandra East, Mumbai, Maharashtra 400051",Bandra,022-66986666,https://asianheartinstitute.org/
+ORG-013,Seven Hills Health Care Private Limited Hospital Blood Centre,blood_bank,"Marol, Andheri East, Mumbai, Maharashtra 400059",Andheri East,
+ORG-014,Shushrusha Blood Bank,blood_bank,"698/B, Ranade Road, Dadar West, Shivaji Park, Mumbai, Maharashtra 400028",Dadar West,
+ORG-015,Holy Spirit Hospital Blood Bank,blood_bank,"Sher-E-Punjab Colony, Andheri East, Mumbai, Maharashtra 400093",Andheri East,022-42478888,,
+ORG-016,Rajawadi Blood Bank,blood_bank,"Rajawadi Colony, Ghatkopar East, Mumbai, Maharashtra 400077",Ghatkopar East,022-21025611,,
+ORG-017,Meenatai Thackeray Blood Bank,blood_bank,"Community Welfare Centre, Sitaram Patkar Marg, Off Aarey Road, Goregaon West, Mumbai, Maharashtra 400104",Goregaon West,,

@@ -1,0 +1,21 @@
+organization_id,organization_name,organization_type,address,area,latitude,longitude,phone,is_verified,is_active,data_source
+ORG-001,Green Hospital 1,hospital,"229 Vikhroli Road, Mumbai",Vikhroli,19.197067,72.959878,9249827706,True,True,synthetic_demo
+ORG-002,Rose Hospital 2,hospital,"433 Vikhroli Road, Mumbai",Vikhroli,19.228533,72.950068,9134126396,True,True,synthetic_demo
+ORG-003,Apex Hospital 3,hospital,"575 Andheri Road, Mumbai",Andheri,19.099532,72.869968,9313500298,False,True,synthetic_demo
+ORG-004,Apex Hospital 4,hospital,"778 Sion Road, Mumbai",Sion,19.03906,72.85361,9965241839,True,True,synthetic_demo
+ORG-005,Green Hospital 5,hospital,"981 Mulund Road, Mumbai",Mulund,19.157131,72.925394,9919795579,False,True,synthetic_demo
+ORG-006,Life Hospital 6,hospital,"619 Andheri Road, Mumbai",Andheri,19.093237,72.849536,9384027113,True,True,synthetic_demo
+ORG-007,Mercy Hospital 7,hospital,"81 Mulund Road, Mumbai",Mulund,19.158971,72.917741,9692749116,False,True,synthetic_demo
+ORG-008,Rose Hospital 8,hospital,"197 Vikhroli Road, Mumbai",Vikhroli,19.222426,72.965885,9856528252,True,True,synthetic_demo
+ORG-009,Care Hospital 9,hospital,"876 Bandra Road, Mumbai",Bandra,19.067663,72.843153,9349957310,True,True,synthetic_demo
+ORG-010,Life Hospital 10,hospital,"167 Goregaon Road, Mumbai",Goregaon,19.157599,72.855684,9497478786,False,True,synthetic_demo
+ORG-011,Sunrise Hospital 11,hospital,"664 Sion Road, Mumbai",Sion,19.050109,72.874791,9176667861,True,True,synthetic_demo
+ORG-012,Mercy Hospital 12,hospital,"277 Borivali Road, Mumbai",Borivali,19.241156,72.84017,9787194506,True,True,synthetic_demo
+ORG-013,Alpha Blood Bank 1,blood_bank,"235 Vikhroli Road, Mumbai",Vikhroli,19.207714,72.961216,9982403818,True,True,synthetic_demo
+ORG-014,Fortune Blood Bank 2,blood_bank,"218 Powai Road, Mumbai",Powai,19.114758,72.883709,9803771909,False,True,synthetic_demo
+ORG-015,Crescent Blood Bank 3,blood_bank,"272 Goregaon Road, Mumbai",Goregaon,19.187934,72.856043,9249926919,True,True,synthetic_demo
+ORG-016,Harbor Blood Bank 4,blood_bank,"920 Mulund Road, Mumbai",Mulund,19.164068,72.924637,9726563708,False,True,synthetic_demo
+ORG-017,Jade Blood Bank 5,blood_bank,"94 Powai Road, Mumbai",Powai,19.105666,72.930277,9911514914,True,True,synthetic_demo
+ORG-018,Harbor Blood Bank 6,blood_bank,"611 Andheri Road, Mumbai",Andheri,19.096242,72.852699,9168212356,False,True,synthetic_demo
+ORG-019,Emerald Blood Bank 7,blood_bank,"995 Goregaon Road, Mumbai",Goregaon,19.173494,72.847302,9694021782,True,True,synthetic_demo
+ORG-020,Emerald Blood Bank 8,blood_bank,"788 Vikhroli Road, Mumbai",Vikhroli,19.227536,72.956886,9788227492,False,True,synthetic_demo

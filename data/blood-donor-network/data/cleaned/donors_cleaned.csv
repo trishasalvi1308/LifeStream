@@ -1,0 +1,11 @@
+name,blood_group,age,city,last_donation_date,phone,gender,is_available
+Asha Patel,A+,29,Mumbai,2025-01-21,9876543210,Female,True
+Rahul Sharma,B+,34,Delhi,2025-02-15,9123456780,Male,True
+Meera Nair,O-,27,Bengaluru,2024-12-05,9988776655,Female,False
+Vikram Singh,AB+,41,Chennai,2025-02-01,9765432109,Male,True
+Naina Verma,A-,31,Hyderabad,2025-01-10,9654321098,Female,True
+Karan Joshi,O+,36,Pune,2024-11-22,9543216780,Male,False
+Priya Iyer,B-,24,Kerala,2025-03-08,9432109876,Female,True
+Arjun Kumar,A+,45,Jaipur,2025-02-17,9321456789,Male,True
+Sonia Reddy,AB-,30,Ahmedabad,2025-01-19,9210987654,Female,False
+Deepak Rao,O+,39,Bhopal,2024-10-30,9109876543,Male,True

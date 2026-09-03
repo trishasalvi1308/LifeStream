@@ -1,17 +1,18 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '../components/Card';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
 import { MapPin, Droplet, Activity, ShieldAlert } from 'lucide-react';
 import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
-import { minimalMapOptions } from '../utils/mapStyles';
+import { minimalMapOptions, libraries } from '../utils/mapStyles';
 
 export const SosRequest: React.FC = () => {
   const navigate = useNavigate();
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
+    libraries
   });
 
   const [bloodGroup, setBloodGroup] = React.useState('');

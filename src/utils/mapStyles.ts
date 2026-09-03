@@ -1,3 +1,5 @@
+export const libraries: ("places")[] = ["places"];
+
 export const minimalMapOptions = {
   disableDefaultUI: true,
   styles: [

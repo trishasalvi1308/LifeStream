@@ -1,20 +1,49 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
 import { MapPin, Navigation, ArrowLeft } from 'lucide-react';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
-import { minimalMapOptions } from '../utils/mapStyles';
+import { minimalMapOptions, libraries } from '../utils/mapStyles';
+import { supabase } from '../config/supabase';
 
-const libraries: ("places")[] = ["places"];
+interface Organization {
+  organization_id: string | number;
+  organization_name: string;
+  organization_type: 'hospital' | 'blood_bank';
+  address: string | null;
+  area: string | null;
+  phone: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  distanceKm: number;
+}
+
+interface OrganizationRow extends Omit<Organization, 'distanceKm'> {}
+
+const calculateDistanceKm = (
+  first: { lat: number; lng: number },
+  second: { lat: number; lng: number }
+) => {
+  const earthRadiusKm = 6371;
+  const latitudeDifference = (second.lat - first.lat) * Math.PI / 180;
+  const longitudeDifference = (second.lng - first.lng) * Math.PI / 180;
+  const firstLatitude = first.lat * Math.PI / 180;
+  const secondLatitude = second.lat * Math.PI / 180;
+  const haversine = Math.sin(latitudeDifference / 2) ** 2
+    + Math.cos(firstLatitude) * Math.cos(secondLatitude)
+    * Math.sin(longitudeDifference / 2) ** 2;
+
+  return earthRadiusKm * 2 * Math.atan2(Math.sqrt(haversine), Math.sqrt(1 - haversine));
+};
 
 export const FindHospitals: React.FC = () => {
   const navigate = useNavigate();
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
-  const [hospitals, setHospitals] = useState<google.maps.places.PlaceResult[]>([]);
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [loadingMsg, setLoadingMsg] = useState('Finding your location...');
-  
-  const mapRef = useRef<google.maps.Map | null>(null);
+  const [organizationsLoading, setOrganizationsLoading] = useState(false);
+  const [organizationsError, setOrganizationsError] = useState<string | null>(null);
 
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
@@ -31,7 +60,7 @@ export const FindHospitals: React.FC = () => {
             lat: position.coords.latitude,
             lng: position.coords.longitude
           });
-          setLoadingMsg('Searching for nearby hospitals...');
+          setLoadingMsg('Loading nearby organizations...');
         },
         (error) => {
           console.error("Error fetching location", error);
@@ -43,31 +72,49 @@ export const FindHospitals: React.FC = () => {
     }
   }, []);
 
-  // Fetch nearby hospitals once map is loaded and we have location
-  const onMapLoad = useCallback((map: google.maps.Map) => {
-    mapRef.current = map;
-    if (userLocation) {
-      searchHospitals(map, userLocation);
-    }
-  }, [userLocation]);
+  useEffect(() => {
+    if (!userLocation) return;
 
-  const searchHospitals = (map: google.maps.Map, location: {lat: number, lng: number}) => {
-    const service = new google.maps.places.PlacesService(map);
-    const request = {
-      location: location,
-      radius: 5000, // 5km
-      type: 'hospital'
+    let isMounted = true;
+    const loadOrganizations = async () => {
+      setOrganizationsLoading(true);
+      setOrganizationsError(null);
+
+      const { data, error } = await supabase
+        .from('organizations')
+        .select('organization_id, organization_name, organization_type, address, area, phone, latitude, longitude')
+        .eq('is_active', true)
+        .eq('is_verified', true)
+        .in('organization_type', ['hospital', 'blood_bank']);
+
+      if (!isMounted) return;
+
+      if (error) {
+        setOrganizationsError('Could not load nearby organizations.');
+        setOrganizationsLoading(false);
+        return;
+      }
+
+      const sortedOrganizations = ((data ?? []) as OrganizationRow[])
+        .filter((organization) => organization.latitude !== null && organization.longitude !== null)
+        .map((organization) => ({
+          ...organization,
+          distanceKm: calculateDistanceKm(userLocation, {
+            lat: organization.latitude as number,
+            lng: organization.longitude as number
+          })
+        }))
+        .sort((first, second) => first.distanceKm - second.distanceKm);
+
+      setOrganizations(sortedOrganizations);
+      setOrganizationsLoading(false);
     };
 
-    service.nearbySearch(request, (results, status) => {
-      if (status === google.maps.places.PlacesServiceStatus.OK && results) {
-        // Sort by distance (roughly, based on proximity since Places API returns them somewhat ordered)
-        setHospitals(results.slice(0, 5)); // Limit to top 5
-      } else {
-        setLoadingMsg('No hospitals found nearby.');
-      }
-    });
-  };
+    void loadOrganizations();
+    return () => {
+      isMounted = false;
+    };
+  }, [userLocation]);
 
   return (
     <div className="animate-fade-in" style={{ padding: 'var(--spacing-6) 0', maxWidth: '1200px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column', height: 'calc(100vh - 120px)' }}>
@@ -97,7 +144,6 @@ export const FindHospitals: React.FC = () => {
               center={userLocation}
               zoom={13}
               options={minimalMapOptions}
-              onLoad={onMapLoad}
             >
               {/* User Location */}
               <Marker 
@@ -112,47 +158,47 @@ export const FindHospitals: React.FC = () => {
                 }}
               />
 
-              {/* Hospitals */}
-              {hospitals.map((hospital, index) => (
-                hospital.geometry?.location && (
-                  <Marker 
-                    key={index} 
-                    position={hospital.geometry.location} 
+              {/* Supabase organizations */}
+              {organizations.map((organization) => (
+                <Marker
+                    key={organization.organization_id}
+                    position={{ lat: organization.latitude as number, lng: organization.longitude as number }}
                     icon={{
                       url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png'
                     }}
                   />
-                )
               ))}
             </GoogleMap>
           </div>
 
           {/* List Side */}
           <div className="stagger-3" style={{ flex: 1, height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-4)', paddingRight: 'var(--spacing-2)' }}>
-            {hospitals.length === 0 ? (
-              <p style={{ color: 'var(--text-secondary)' }}>{loadingMsg}</p>
+            {organizationsLoading ? (
+              <p style={{ color: 'var(--text-secondary)' }}>Loading nearby organizations...</p>
+            ) : organizationsError ? (
+              <p style={{ color: 'var(--text-secondary)' }}>{organizationsError}</p>
+            ) : organizations.length === 0 ? (
+              <p style={{ color: 'var(--text-secondary)' }}>No verified hospitals or blood banks found nearby.</p>
             ) : (
-              hospitals.map((hospital, index) => (
-                <Card key={index} className="hover-lift" style={{ padding: 'var(--spacing-4)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderLeft: '4px solid var(--color-primary)' }}>
+              organizations.map((organization) => (
+                <Card key={organization.organization_id} className="hover-lift" style={{ padding: 'var(--spacing-4)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderLeft: '4px solid var(--color-primary)' }}>
                   <div>
-                    <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px' }}>{hospital.name}</h3>
+                    <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px' }}>{organization.organization_name}</h3>
+                    <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', marginBottom: '4px' }}>
+                      {organization.organization_type === 'blood_bank' ? 'Blood Bank' : 'Hospital'} · {organization.distanceKm.toFixed(1)} km away
+                    </p>
                     <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <MapPin size={12} />
-                      {hospital.vicinity || hospital.formatted_address || 'Address not available'}
+                      {organization.address || 'Address not available'}
                     </p>
-                    {hospital.rating && (
-                      <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-warning)', marginTop: '4px', fontWeight: 600 }}>
-                        ★ {hospital.rating} Rating
-                      </p>
-                    )}
+                    {organization.area && <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', marginTop: '4px' }}>{organization.area}</p>}
+                    {organization.phone && <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', marginTop: '4px' }}>{organization.phone}</p>}
                   </div>
                   <Button 
                     variant="primary"
                     style={{ padding: '8px', borderRadius: '50%' }}
                     onClick={() => {
-                      if (hospital.name) {
-                        window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(hospital.name)}`, '_blank');
-                      }
+                      window.open(`https://www.google.com/maps/search/?api=1&query=${organization.latitude},${organization.longitude}`, '_blank');
                     }}
                   >
                     <Navigation size={18} />
